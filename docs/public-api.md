@@ -115,12 +115,12 @@ impl MergeSession {
     pub fn propose_resolutions(
         &self,
         hunk_id: HunkId,
-        strategies: &[Box<dyn ResolutionStrategy>],
+        strategies: &[&dyn ResolutionStrategy],
     ) -> Vec<Resolution>
 }
 ```
 
-Generates candidate resolutions without modifying state.
+Generates candidate resolutions without modifying state. Strategies implement the `ResolutionStrategy` trait; each returned `Resolution` contains a `ResolutionStrategyKind` describing how it was generated.
 
 ### Set Resolution
 
@@ -250,7 +250,7 @@ pub struct MergeResult {
 
 ```rust
 pub struct Resolution {
-    pub strategy: ResolutionStrategy,
+    pub kind: ResolutionStrategyKind,
     pub content: String,
     pub metadata: ResolutionMetadata,
 }
@@ -322,7 +322,10 @@ This separation ensures core remains pure and testable.
 ## Example Usage
 
 ```rust
-use meldr_core::{MergeSession, MergeInput, Resolution, ResolutionStrategy};
+use meldr_core::{
+    MergeSession, MergeInput, Resolution, ResolutionStrategyKind,
+    AcceptBothStrategy, AcceptBothOptions, BothOrder,
+};
 
 // Create session
 let input = MergeInput { left, right, base: Some(base) };
@@ -333,11 +336,21 @@ for hunk in session.hunks() {
     println!("Hunk {}: {:?}", hunk.id(), hunk.state());
 }
 
-// Apply resolution
+// Get proposals using strategy trait
+let strategy = AcceptBothStrategy {
+    options: AcceptBothOptions {
+        order: BothOrder::LeftThenRight,
+        deduplicate: true,
+        trim_whitespace: false,
+    },
+};
+let proposals = session.propose_resolutions(hunk_id, &[&strategy]);
+
+// Apply resolution (using ResolutionStrategyKind enum)
 session.set_resolution(
     hunk_id,
     Resolution {
-        strategy: ResolutionStrategy::AcceptBoth(options),
+        kind: ResolutionStrategyKind::AcceptBoth(options),
         content: merged_content,
         metadata: ResolutionMetadata::default(),
     },

@@ -11,6 +11,7 @@ All strategies implement a common interface:
 ```rust
 pub trait ResolutionStrategy {
     fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution>;
+    fn kind(&self) -> ResolutionStrategyKind;
 }
 ```
 
@@ -24,6 +25,25 @@ pub struct MergeEngine {
 
 ---
 
+## ResolutionStrategyKind
+
+This enum describes the **source** of a resolution (imported from domain-model):
+
+```rust
+pub enum ResolutionStrategyKind {
+    AcceptLeft,
+    AcceptRight,
+    AcceptBoth(AcceptBothOptions),
+    Manual,
+    AstMerged { language: Language },
+    AiSuggested { provider: String },
+}
+```
+
+The `ResolutionStrategy` trait generates proposals; `ResolutionStrategyKind` records **how** a resolution was chosen.
+
+---
+
 ## Built-in Strategies
 
 ### AcceptLeft
@@ -31,7 +51,12 @@ pub struct MergeEngine {
 Uses the left (HEAD) content verbatim.
 
 ```rust
-ResolutionStrategy::AcceptLeft
+pub struct AcceptLeftStrategy;
+
+impl ResolutionStrategy for AcceptLeftStrategy {
+    fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution> { /* ... */ }
+    fn kind(&self) -> ResolutionStrategyKind { ResolutionStrategyKind::AcceptLeft }
+}
 ```
 
 **Use case:** Prefer your changes over incoming changes.
@@ -41,7 +66,12 @@ ResolutionStrategy::AcceptLeft
 Uses the right (MERGE_HEAD) content verbatim.
 
 ```rust
-ResolutionStrategy::AcceptRight
+pub struct AcceptRightStrategy;
+
+impl ResolutionStrategy for AcceptRightStrategy {
+    fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution> { /* ... */ }
+    fn kind(&self) -> ResolutionStrategyKind { ResolutionStrategyKind::AcceptRight }
+}
 ```
 
 **Use case:** Prefer incoming changes over your changes.
@@ -51,11 +81,16 @@ ResolutionStrategy::AcceptRight
 Combines left and right content with configurable options.
 
 ```rust
-ResolutionStrategy::AcceptBoth(AcceptBothOptions {
-    order: BothOrder::LeftThenRight,
-    deduplicate: true,
-    trim_whitespace: false,
-})
+pub struct AcceptBothStrategy {
+    pub options: AcceptBothOptions,
+}
+
+impl ResolutionStrategy for AcceptBothStrategy {
+    fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution> { /* ... */ }
+    fn kind(&self) -> ResolutionStrategyKind {
+        ResolutionStrategyKind::AcceptBoth(self.options.clone())
+    }
+}
 ```
 
 #### AcceptBothOptions
@@ -78,7 +113,12 @@ This strategy alone puts meldr ahead of most merge tools.
 User-provided content that doesn't match any automated strategy.
 
 ```rust
-ResolutionStrategy::Manual
+pub struct ManualStrategy;
+
+impl ResolutionStrategy for ManualStrategy {
+    fn propose(&self, _hunk: &ConflictHunk) -> Option<Resolution> { None }
+    fn kind(&self) -> ResolutionStrategyKind { ResolutionStrategyKind::Manual }
+}
 ```
 
 **Use case:** Complex merges requiring human judgment.
@@ -90,7 +130,17 @@ ResolutionStrategy::Manual
 Language-specific structural merging.
 
 ```rust
-ResolutionStrategy::AstMerged { language: Language::Rust }
+pub struct AstStrategy {
+    pub language: Language,
+    pub fallback: Box<dyn ResolutionStrategy>,
+}
+
+impl ResolutionStrategy for AstStrategy {
+    fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution> { /* ... */ }
+    fn kind(&self) -> ResolutionStrategyKind {
+        ResolutionStrategyKind::AstMerged { language: self.language }
+    }
+}
 ```
 
 ### Supported Languages
@@ -155,7 +205,17 @@ impl ResolutionStrategy for AstStrategy {
 AI-assisted resolution is **opt-in** and **never auto-applies**.
 
 ```rust
-ResolutionStrategy::AiSuggested { provider: "claude".to_string() }
+pub struct AiStrategy {
+    pub provider: Box<dyn AiProvider>,
+    pub provider_name: String,
+}
+
+impl ResolutionStrategy for AiStrategy {
+    fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution> { /* ... */ }
+    fn kind(&self) -> ResolutionStrategyKind {
+        ResolutionStrategyKind::AiSuggested { provider: self.provider_name.clone() }
+    }
+}
 ```
 
 ### Core Principles

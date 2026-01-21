@@ -47,7 +47,7 @@ Represents a single merge attempt for a file.
 | `input` | `MergeInput` | The original merge inputs |
 | `hunks` | `Vec<ConflictHunk>` | Parsed conflict regions |
 | `state` | `MergeState` | Current session state |
-| `resolutions` | `Map<HunkId, Resolution>` | Applied resolutions |
+| `resolutions` | `HashMap<HunkId, Resolution>` | Applied resolutions |
 
 ---
 
@@ -56,15 +56,17 @@ Represents a single merge attempt for a file.
 The state of a merge session.
 
 ```
-Uninitialized → Parsed → Resolving → Validated → Completed
+Uninitialized → Parsed → Active → FullyResolved → Applied → Validated → Completed
 ```
 
 | State | Description |
 |-------|-------------|
 | `Uninitialized` | Raw MergeInput provided, no parsing performed |
 | `Parsed` | Conflict markers parsed, hunks created |
-| `Resolving` | User is applying resolutions |
-| `Validated` | All hunks resolved, validation passed |
+| `Active` | User is applying resolutions |
+| `FullyResolved` | All hunks resolved, no output generated yet |
+| `Applied` | Resolutions applied, output text produced |
+| `Validated` | Output contains no conflict markers, file is valid |
 | `Completed` | Final MergeResult generated |
 
 ---
@@ -148,15 +150,17 @@ An explicit decision applied to a hunk.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `strategy` | `ResolutionStrategy` | How the resolution was chosen |
+| `kind` | `ResolutionStrategyKind` | How the resolution was chosen |
 | `content` | `String` | The resolved content |
 | `metadata` | `ResolutionMetadata` | Additional metadata |
 
 ---
 
-## ResolutionStrategy
+## ResolutionStrategyKind
 
-Describes how a resolution was chosen. The strategy is descriptive, not prescriptive—the actual output is always stored explicitly in `content`.
+Describes **how** a resolution was chosen. This enum is descriptive, not prescriptive—the actual output is always stored explicitly in `content`.
+
+> **Note:** This enum describes the **source** of a resolution (what). For strategy **behavior** (generating proposals), see the `ResolutionStrategy` trait in [resolution-strategies.md](resolution-strategies.md).
 
 | Variant | Description |
 |---------|-------------|

@@ -44,9 +44,12 @@ Resolutions are **inert** until applied—they represent decisions, not output.
 
 ### Strategy
 
-The **method** used to choose a resolution. Strategies are descriptive, not prescriptive.
+The **method** used to choose a resolution. meldr distinguishes between:
 
-Built-in strategies:
+- **`ResolutionStrategy`** (trait) — Defines behavior for generating resolution proposals. Strategies implement `propose()` to suggest resolutions and `kind()` to identify their type.
+- **`ResolutionStrategyKind`** (enum) — Describes the **source** of a resolution (how it was chosen). Stored in each `Resolution` to record provenance.
+
+Built-in strategy kinds:
 - `AcceptLeft` — use left content
 - `AcceptRight` — use right content
 - `AcceptBoth` — combine both sides
@@ -62,7 +65,7 @@ A `MergeSession` represents **one merge attempt for one file**. It tracks:
 - Applied resolutions
 - Current state
 
-Sessions progress through a defined lifecycle: Parsed → Active → FullyResolved → Applied → Validated.
+Sessions progress through a defined lifecycle: Uninitialized → Parsed → Active → FullyResolved → Applied → Validated → Completed.
 
 ---
 

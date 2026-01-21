@@ -9,7 +9,7 @@ This document defines the lifecycle of a merge operation in meldr.
 A conflicted file moves through distinct phases:
 
 ```
-Parsed → Active → FullyResolved → Applied → Validated
+Uninitialized → Parsed → Active → FullyResolved → Applied → Validated → Completed
 ```
 
 The lifecycle supports:
@@ -26,22 +26,26 @@ A `MergeSession` represents one attempt to merge a single file.
 
 ```rust
 pub struct MergeSession {
-    pub file: ConflictFile,
-    pub file_state: FileState,
+    pub input: MergeInput,
+    pub hunks: Vec<ConflictHunk>,
+    pub state: MergeState,
+    pub resolutions: HashMap<HunkId, Resolution>,
 }
 ```
 
 ---
 
-## File-Level States
+## MergeState
 
 ```rust
-pub enum FileState {
+pub enum MergeState {
+    Uninitialized,
     Parsed,
     Active,
     FullyResolved,
     Applied,
     Validated,
+    Completed,
 }
 ```
 
@@ -49,11 +53,13 @@ pub enum FileState {
 
 | State | Description |
 |-------|-------------|
+| `Uninitialized` | Raw MergeInput provided, no parsing performed |
 | `Parsed` | Conflict markers parsed, hunks identified, no resolutions chosen |
 | `Active` | At least one hunk unresolved, user or automation selecting resolutions |
 | `FullyResolved` | All hunks have a Resolution, no output generated yet |
 | `Applied` | Resolutions applied, output text produced |
 | `Validated` | Output contains no conflict markers, file is valid |
+| `Completed` | Final MergeResult generated |
 
 ### State Transitions
 
@@ -137,11 +143,11 @@ These are the only allowed transitions in `meldr-core`.
 ### Parsing
 
 ```rust
-fn parse(contents: &str) -> ConflictFile
+fn parse(contents: &str, input: MergeInput) -> Result<MergeSession, ParseError>
 ```
 
 - Creates hunks from conflict markers
-- Sets `FileState::Parsed`
+- Sets `MergeState::Parsed`
 - All hunks start as `Unresolved`
 
 ### Proposing Resolutions
@@ -149,7 +155,7 @@ fn parse(contents: &str) -> ConflictFile
 ```rust
 fn propose_resolutions(
     hunk: &ConflictHunk,
-    strategies: &[Box<dyn ResolutionStrategy>],
+    strategies: &[&dyn ResolutionStrategy],
 ) -> Vec<Resolution>
 ```
 
@@ -185,7 +191,9 @@ fn clear_resolution(hunk_id: HunkId)
 ### Applying Resolutions
 
 ```rust
-fn apply(file: &ConflictFile) -> String
+impl MergeSession {
+    fn apply(&mut self) -> String
+}
 ```
 
 - Produces output text

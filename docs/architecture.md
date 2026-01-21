@@ -161,6 +161,7 @@ New strategies implement the `ResolutionStrategy` trait:
 ```rust
 pub trait ResolutionStrategy {
     fn propose(&self, hunk: &ConflictHunk) -> Option<Resolution>;
+    fn kind(&self) -> ResolutionStrategyKind;
 }
 ```
 
