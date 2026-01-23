@@ -29,7 +29,7 @@ const NORD9: Color = Color::Rgb(129, 161, 193);
 const NORD10: Color = Color::Rgb(94, 129, 172);
 
 // Nord Aurora
-const NORD11: Color = Color::Rgb(191, 97, 106);  // Red
+const NORD11: Color = Color::Rgb(191, 97, 106); // Red
 const NORD12: Color = Color::Rgb(208, 135, 112); // Orange
 const NORD13: Color = Color::Rgb(235, 203, 139); // Yellow
 const NORD14: Color = Color::Rgb(163, 190, 140); // Green
@@ -52,6 +52,7 @@ pub fn theme() -> Theme {
         Style::default().fg(NORD12), // right - orange
         Style::default().fg(NORD14), // both - green
         Style::default().fg(NORD11), // unresolved - red
+        Style::default().fg(NORD14), // resolved - green
     );
 
     let diff = DiffColors::new(

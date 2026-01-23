@@ -24,19 +24,14 @@ const YELLOW: Color = Color::Rgb(229, 192, 123);
 /// Creates the One Dark theme.
 #[must_use]
 pub fn theme() -> Theme {
-    let base = ColorPalette::new(
-        BG,
-        FG,
-        COMMENT,
-        YELLOW,
-        BLUE,
-    );
+    let base = ColorPalette::new(BG, FG, COMMENT, YELLOW, BLUE);
 
     let conflict = ConflictColors::new(
         Style::default().fg(BLUE),
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(

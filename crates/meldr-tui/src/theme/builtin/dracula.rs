@@ -23,19 +23,14 @@ const YELLOW: Color = Color::Rgb(241, 250, 140);
 /// Creates the Dracula theme.
 #[must_use]
 pub fn theme() -> Theme {
-    let base = ColorPalette::new(
-        BACKGROUND,
-        FOREGROUND,
-        COMMENT,
-        PURPLE,
-        CYAN,
-    );
+    let base = ColorPalette::new(BACKGROUND, FOREGROUND, COMMENT, PURPLE, CYAN);
 
     let conflict = ConflictColors::new(
         Style::default().fg(CYAN),
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(

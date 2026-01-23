@@ -33,11 +33,11 @@ const GREEN: Color = Color::Rgb(133, 153, 0);
 #[must_use]
 pub fn dark() -> Theme {
     let base = ColorPalette::new(
-        BASE03,  // background
-        BASE0,   // foreground
-        BASE01,  // muted
-        YELLOW,  // accent
-        BLUE,    // secondary
+        BASE03, // background
+        BASE0,  // foreground
+        BASE01, // muted
+        YELLOW, // accent
+        BLUE,   // secondary
     );
 
     let conflict = ConflictColors::new(
@@ -45,6 +45,7 @@ pub fn dark() -> Theme {
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(
@@ -69,11 +70,11 @@ pub fn dark() -> Theme {
 #[must_use]
 pub fn light() -> Theme {
     let base = ColorPalette::new(
-        BASE3,   // background
-        BASE00,  // foreground
-        BASE1,   // muted
-        YELLOW,  // accent
-        BLUE,    // secondary
+        BASE3,  // background
+        BASE00, // foreground
+        BASE1,  // muted
+        YELLOW, // accent
+        BLUE,   // secondary
     );
 
     let conflict = ConflictColors::new(
@@ -81,6 +82,7 @@ pub fn light() -> Theme {
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(

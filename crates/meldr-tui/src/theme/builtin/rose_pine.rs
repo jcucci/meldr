@@ -77,6 +77,7 @@ pub fn main() -> Theme {
         Style::default().fg(ROSE),
         Style::default().fg(PINE),
         Style::default().fg(LOVE),
+        Style::default().fg(PINE),
     );
 
     let diff = DiffColors::new(
@@ -110,6 +111,7 @@ pub fn moon() -> Theme {
         Style::default().fg(ROSE),
         Style::default().fg(PINE),
         Style::default().fg(LOVE),
+        Style::default().fg(PINE),
     );
 
     let diff = DiffColors::new(
@@ -143,6 +145,7 @@ pub fn dawn() -> Theme {
         Style::default().fg(ROSE),
         Style::default().fg(PINE),
         Style::default().fg(LOVE),
+        Style::default().fg(PINE),
     );
 
     let diff = DiffColors::new(

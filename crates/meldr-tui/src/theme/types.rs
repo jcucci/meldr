@@ -43,6 +43,8 @@ pub struct ConflictColors {
     pub both: Style,
     /// Style for unresolved conflicts.
     pub unresolved: Style,
+    /// Style for resolved conflicts.
+    pub resolved: Style,
 }
 
 /// Colors for diff visualization.
@@ -114,12 +116,19 @@ impl ColorPalette {
 impl ConflictColors {
     /// Creates new conflict colors.
     #[must_use]
-    pub const fn new(left: Style, right: Style, both: Style, unresolved: Style) -> Self {
+    pub const fn new(
+        left: Style,
+        right: Style,
+        both: Style,
+        unresolved: Style,
+        resolved: Style,
+    ) -> Self {
         Self {
             left,
             right,
             both,
             unresolved,
+            resolved,
         }
     }
 }
@@ -184,6 +193,7 @@ mod tests {
             Color::Cyan,
         );
         let conflict = ConflictColors::new(
+            Style::default(),
             Style::default(),
             Style::default(),
             Style::default(),

@@ -51,6 +51,7 @@ fn from_flavor(flavor: &Flavor) -> Theme {
         Style::default().fg(Color::from(c.peach)),
         Style::default().fg(Color::from(c.green)),
         Style::default().fg(Color::from(c.red)),
+        Style::default().fg(Color::from(c.green)),
     );
 
     let diff = DiffColors::new(
@@ -86,12 +87,18 @@ mod tests {
     #[test]
     fn latte_creates_theme() {
         let theme = latte();
-        assert_eq!(theme.ui.border_focused, Color::from(PALETTE.latte.colors.yellow));
+        assert_eq!(
+            theme.ui.border_focused,
+            Color::from(PALETTE.latte.colors.yellow)
+        );
     }
 
     #[test]
     fn mocha_creates_theme() {
         let theme = mocha();
-        assert_eq!(theme.ui.border_focused, Color::from(PALETTE.mocha.colors.yellow));
+        assert_eq!(
+            theme.ui.border_focused,
+            Color::from(PALETTE.mocha.colors.yellow)
+        );
     }
 }

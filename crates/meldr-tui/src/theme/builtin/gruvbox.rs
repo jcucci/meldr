@@ -56,6 +56,7 @@ pub fn dark() -> Theme {
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(
@@ -89,6 +90,7 @@ pub fn light() -> Theme {
         Style::default().fg(ORANGE),
         Style::default().fg(GREEN),
         Style::default().fg(RED),
+        Style::default().fg(GREEN),
     );
 
     let diff = DiffColors::new(

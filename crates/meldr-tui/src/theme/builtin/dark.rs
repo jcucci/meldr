@@ -20,6 +20,7 @@ pub fn theme() -> Theme {
         Style::default().fg(Color::Rgb(255, 150, 100)), // right - orange
         Style::default().fg(Color::Rgb(150, 220, 150)), // both - green
         Style::default().fg(Color::Rgb(255, 100, 100)), // unresolved - red
+        Style::default().fg(Color::Rgb(100, 200, 100)), // resolved - bright green
     );
 
     let diff = DiffColors::new(
@@ -36,8 +37,8 @@ pub fn theme() -> Theme {
     );
 
     let ui = UiColors::new(
-        Color::Rgb(255, 215, 0),   // border_focused (gold)
-        Color::Rgb(80, 80, 80),    // border_unfocused
+        Color::Rgb(255, 215, 0),                        // border_focused (gold)
+        Color::Rgb(80, 80, 80),                         // border_unfocused
         Style::default().fg(Color::Rgb(100, 200, 255)), // title
         Style::default().fg(Color::Rgb(128, 128, 128)), // status
         Style::default()

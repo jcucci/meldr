@@ -16,10 +16,11 @@ pub fn theme() -> Theme {
     );
 
     let conflict = ConflictColors::new(
-        Style::default().fg(Color::Rgb(0, 100, 200)),  // left - blue
-        Style::default().fg(Color::Rgb(200, 100, 0)),  // right - orange
-        Style::default().fg(Color::Rgb(0, 150, 0)),    // both - green
-        Style::default().fg(Color::Rgb(200, 50, 50)),  // unresolved - red
+        Style::default().fg(Color::Rgb(0, 100, 200)), // left - blue
+        Style::default().fg(Color::Rgb(200, 100, 0)), // right - orange
+        Style::default().fg(Color::Rgb(0, 150, 0)),   // both - green
+        Style::default().fg(Color::Rgb(200, 50, 50)), // unresolved - red
+        Style::default().fg(Color::Rgb(50, 150, 50)), // resolved - green
     );
 
     let diff = DiffColors::new(
@@ -36,9 +37,9 @@ pub fn theme() -> Theme {
     );
 
     let ui = UiColors::new(
-        Color::Rgb(180, 130, 0),   // border_focused
-        Color::Rgb(180, 180, 180), // border_unfocused
-        Style::default().fg(Color::Rgb(0, 120, 180)), // title
+        Color::Rgb(180, 130, 0),                        // border_focused
+        Color::Rgb(180, 180, 180),                      // border_unfocused
+        Style::default().fg(Color::Rgb(0, 120, 180)),   // title
         Style::default().fg(Color::Rgb(128, 128, 128)), // status
         Style::default()
             .fg(Color::Rgb(0, 0, 0))

@@ -21,8 +21,8 @@
 //! let theme = Theme::from(theme_name);
 //! ```
 
-mod types;
 pub mod builtin;
+mod types;
 
 pub use types::{ColorPalette, ConflictColors, DiffColors, Theme, UiColors};
 
@@ -214,7 +214,10 @@ mod tests {
             "catppuccin-mocha".parse::<ThemeName>().unwrap(),
             ThemeName::CatppuccinMocha
         );
-        assert_eq!("mocha".parse::<ThemeName>().unwrap(), ThemeName::CatppuccinMocha);
+        assert_eq!(
+            "mocha".parse::<ThemeName>().unwrap(),
+            ThemeName::CatppuccinMocha
+        );
     }
 
     #[test]
@@ -243,7 +246,10 @@ mod tests {
     fn theme_from_theme_name() {
         let theme = Theme::from(ThemeName::Dark);
         // Just verify it doesn't panic and returns a theme
-        assert_eq!(theme.ui.border_focused, ratatui::style::Color::Rgb(255, 215, 0));
+        assert_eq!(
+            theme.ui.border_focused,
+            ratatui::style::Color::Rgb(255, 215, 0)
+        );
     }
 
     #[test]
