@@ -38,3 +38,6 @@ crossterm = "0.28"
 # Common dependencies
 thiserror = "2.0"
 serde = { version = "1.0", features = ["derive"] }
+
+# Theme dependencies
+catppuccin = { version = "2", features = ["ratatui"] }

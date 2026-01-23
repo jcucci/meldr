@@ -17,7 +17,10 @@
 use meldr_core::MergeSession;
 
 pub mod event;
+pub mod theme;
 pub mod ui;
+
+use theme::{Theme, ThemeName};
 
 /// Which pane currently has focus.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -39,16 +42,30 @@ pub struct App {
     should_quit: bool,
     /// Which pane has focus.
     focused_pane: FocusedPane,
+    /// The active theme.
+    theme: Theme,
 }
 
 impl App {
-    /// Creates a new application instance.
+    /// Creates a new application instance with the default theme.
     #[must_use]
     pub fn new() -> Self {
         Self {
             session: None,
             should_quit: false,
             focused_pane: FocusedPane::default(),
+            theme: Theme::from(ThemeName::default()),
+        }
+    }
+
+    /// Creates a new application instance with the specified theme.
+    #[must_use]
+    pub fn with_theme(theme_name: ThemeName) -> Self {
+        Self {
+            session: None,
+            should_quit: false,
+            focused_pane: FocusedPane::default(),
+            theme: Theme::from(theme_name),
         }
     }
 
@@ -96,6 +113,17 @@ impl App {
             FocusedPane::Right => FocusedPane::Left,
             FocusedPane::Result => FocusedPane::Right,
         };
+    }
+
+    /// Returns a reference to the current theme.
+    #[must_use]
+    pub fn theme(&self) -> &Theme {
+        &self.theme
+    }
+
+    /// Sets the theme by name.
+    pub fn set_theme(&mut self, name: ThemeName) {
+        self.theme = Theme::from(name);
     }
 }
 
@@ -207,5 +235,26 @@ mod tests {
         assert_eq!(FocusedPane::Left.title(), "Left (Ours)");
         assert_eq!(FocusedPane::Right.title(), "Right (Theirs)");
         assert_eq!(FocusedPane::Result.title(), "Result");
+    }
+
+    #[test]
+    fn app_with_theme() {
+        let app = App::with_theme(ThemeName::Light);
+        // Verify theme is set by checking a known color
+        assert_eq!(
+            app.theme().base.background,
+            ratatui::style::Color::Rgb(250, 250, 250)
+        );
+    }
+
+    #[test]
+    fn app_set_theme() {
+        let mut app = App::new();
+        app.set_theme(ThemeName::Dracula);
+        // Dracula background is Rgb(40, 42, 54)
+        assert_eq!(
+            app.theme().base.background,
+            ratatui::style::Color::Rgb(40, 42, 54)
+        );
     }
 }

@@ -18,6 +18,7 @@ meldr-core.workspace = true
 ratatui.workspace = true
 crossterm.workspace = true
 thiserror.workspace = true
+catppuccin.workspace = true
 
 [[bin]]
 name = "meldr-tui-dev"
