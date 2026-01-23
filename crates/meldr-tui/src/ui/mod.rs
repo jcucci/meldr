@@ -7,7 +7,7 @@ mod layout;
 pub use layout::{calculate_layout, PaneAreas};
 
 use ratatui::{
-    style::{Color, Style},
+    style::Style,
     widgets::{Block, BorderType, Borders, Paragraph},
     Frame,
 };
@@ -15,26 +15,27 @@ use ratatui::{
 use crate::{App, FocusedPane};
 
 /// Returns the border style for a pane based on focus state.
-fn pane_border_style(current_focus: FocusedPane, pane: FocusedPane) -> Style {
-    if current_focus == pane {
-        Style::default().fg(Color::Yellow)
+fn pane_border_style(app: &App, pane: FocusedPane) -> Style {
+    if app.focused_pane() == pane {
+        Style::default().fg(app.theme().ui.border_focused)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(app.theme().ui.border_unfocused)
     }
 }
 
 /// Renders the entire UI to the frame.
 pub fn draw(frame: &mut Frame, app: &App) {
     let areas = calculate_layout(frame.area());
+    let theme = app.theme();
 
     // Title bar
-    let title = Paragraph::new(" meldr").style(Style::default().fg(Color::Cyan));
+    let title = Paragraph::new(" meldr").style(theme.ui.title);
     frame.render_widget(title, areas.title_bar);
 
     // Pane border styles based on focus
-    let left_style = pane_border_style(app.focused_pane(), FocusedPane::Left);
-    let right_style = pane_border_style(app.focused_pane(), FocusedPane::Right);
-    let result_style = pane_border_style(app.focused_pane(), FocusedPane::Result);
+    let left_style = pane_border_style(app, FocusedPane::Left);
+    let right_style = pane_border_style(app, FocusedPane::Right);
+    let result_style = pane_border_style(app, FocusedPane::Result);
 
     // Left pane
     let left_block = Block::default()
@@ -61,14 +62,14 @@ pub fn draw(frame: &mut Frame, app: &App) {
     frame.render_widget(result_block, areas.result_pane);
 
     // Status bar
-    let status = Paragraph::new(" Press q to quit | Tab to cycle focus")
-        .style(Style::default().fg(Color::DarkGray));
+    let status = Paragraph::new(" Press q to quit | Tab to cycle focus").style(theme.ui.status);
     frame.render_widget(status, areas.status_bar);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::theme::ThemeName;
     use ratatui::{backend::TestBackend, Terminal};
 
     fn create_test_terminal() -> Terminal<TestBackend> {
@@ -110,13 +111,32 @@ mod tests {
 
     #[test]
     fn pane_border_style_returns_focused_style() {
-        let style = pane_border_style(FocusedPane::Left, FocusedPane::Left);
-        assert_eq!(style.fg, Some(Color::Yellow));
+        let app = App::new();
+        let style = pane_border_style(&app, FocusedPane::Left);
+        assert_eq!(style.fg, Some(app.theme().ui.border_focused));
     }
 
     #[test]
     fn pane_border_style_returns_unfocused_style() {
-        let style = pane_border_style(FocusedPane::Left, FocusedPane::Right);
-        assert_eq!(style.fg, Some(Color::DarkGray));
+        let app = App::new();
+        let style = pane_border_style(&app, FocusedPane::Right);
+        assert_eq!(style.fg, Some(app.theme().ui.border_unfocused));
+    }
+
+    #[test]
+    fn draw_with_different_themes() {
+        let mut terminal = create_test_terminal();
+
+        // Test with dark theme (default)
+        let app_dark = App::new();
+        terminal.draw(|frame| draw(frame, &app_dark)).unwrap();
+
+        // Test with light theme
+        let app_light = App::with_theme(ThemeName::Light);
+        terminal.draw(|frame| draw(frame, &app_light)).unwrap();
+
+        // Test with Catppuccin Mocha
+        let app_mocha = App::with_theme(ThemeName::CatppuccinMocha);
+        terminal.draw(|frame| draw(frame, &app_mocha)).unwrap();
     }
 }
