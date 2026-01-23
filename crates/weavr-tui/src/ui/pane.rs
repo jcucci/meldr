@@ -158,7 +158,7 @@ pub fn render_title_bar(frame: &mut Frame, area: Rect, app: &App) {
         Span::styled(hunk_info, Style::default().fg(theme.base.accent)),
     ]);
 
-    let paragraph = Paragraph::new(title).style(theme.ui.title);
+    let paragraph = Paragraph::new(title).style(theme.ui.title.bg(theme.base.background));
     frame.render_widget(paragraph, area);
 }
 
@@ -173,7 +173,7 @@ pub fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
         FocusedPane::Result => " l/r/b: resolve | Tab: pane | q: quit",
     };
 
-    let status = Paragraph::new(help_text).style(theme.ui.status);
+    let status = Paragraph::new(help_text).style(theme.ui.status.bg(theme.base.background));
     frame.render_widget(status, area);
 }
 
