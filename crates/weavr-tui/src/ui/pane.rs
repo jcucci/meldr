@@ -3,7 +3,7 @@
 //! This module handles rendering the full document with conflicts highlighted
 //! in the left, right, and result panes.
 
-use meldr_core::{HunkState, Segment};
+use weavr_core::{HunkState, Segment};
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style},
@@ -153,7 +153,7 @@ pub fn render_title_bar(frame: &mut Frame, area: Rect, app: &App) {
     };
 
     let title = Line::from(vec![
-        Span::styled(" meldr ", theme.ui.title),
+        Span::styled(" weavr ", theme.ui.title),
         Span::raw("| "),
         Span::styled(hunk_info, Style::default().fg(theme.base.accent)),
     ]);
@@ -180,7 +180,7 @@ pub fn render_status_bar(frame: &mut Frame, area: Rect, app: &App) {
 /// Builds the full document content for a side pane (left or right).
 fn build_side_document<'a>(
     segments: &[Segment],
-    hunks: &[meldr_core::ConflictHunk],
+    hunks: &[weavr_core::ConflictHunk],
     side: PaneSide,
     current_hunk_idx: usize,
     theme: &'a crate::theme::Theme,
@@ -251,7 +251,7 @@ fn build_side_document<'a>(
 /// Builds the full document content for the result pane.
 fn build_result_document<'a>(
     segments: &[Segment],
-    hunks: &[meldr_core::ConflictHunk],
+    hunks: &[weavr_core::ConflictHunk],
     current_hunk_idx: usize,
     theme: &'a crate::theme::Theme,
 ) -> Vec<Line<'a>> {
@@ -411,7 +411,7 @@ mod tests {
         let title_line: String = (0..buffer.area.width)
             .map(|x| buffer.cell((x, 0)).unwrap().symbol().to_string())
             .collect();
-        assert!(title_line.contains("meldr"));
+        assert!(title_line.contains("weavr"));
         assert!(title_line.contains("No conflicts"));
     }
 

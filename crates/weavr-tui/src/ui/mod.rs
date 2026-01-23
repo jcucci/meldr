@@ -51,11 +51,11 @@ mod tests {
         let app = App::new();
         terminal.draw(|frame| draw(frame, &app)).unwrap();
         let buffer = terminal.backend().buffer();
-        // Title bar should contain "meldr"
+        // Title bar should contain "weavr"
         let title_line: String = (0..buffer.area.width)
             .map(|x| buffer.cell((x, 0)).unwrap().symbol().to_string())
             .collect();
-        assert!(title_line.contains("meldr"));
+        assert!(title_line.contains("weavr"));
     }
 
     #[test]

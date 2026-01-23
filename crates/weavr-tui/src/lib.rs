@@ -1,6 +1,6 @@
-//! meldr-tui: Terminal User Interface
+//! weavr-tui: Terminal User Interface
 //!
-//! This crate provides the terminal UI for meldr, built on ratatui.
+//! This crate provides the terminal UI for weavr, built on ratatui.
 //!
 //! Key features:
 //! - Three-pane layout (left, right, result)
@@ -8,13 +8,13 @@
 //! - Hunk-based conflict resolution
 //! - Theming support
 //!
-//! The TUI is a thin wrapper around meldr-core. It displays state and
+//! The TUI is a thin wrapper around weavr-core. It displays state and
 //! captures input but never performs merge logic directly.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-use meldr_core::{ConflictHunk, HunkState, MergeSession};
+use weavr_core::{ConflictHunk, HunkState, MergeSession};
 
 pub mod event;
 pub mod theme;
@@ -323,18 +323,18 @@ mod tests {
         let mut app = App::new();
         assert!(app.session().is_none());
 
-        let input = meldr_core::MergeInput {
-            left: meldr_core::FileVersion {
+        let input = weavr_core::MergeInput {
+            left: weavr_core::FileVersion {
                 path: PathBuf::from("test.rs"),
                 content: String::from("left"),
             },
-            right: meldr_core::FileVersion {
+            right: weavr_core::FileVersion {
                 path: PathBuf::from("test.rs"),
                 content: String::from("right"),
             },
             base: None,
         };
-        let session = meldr_core::MergeSession::new(input).unwrap();
+        let session = weavr_core::MergeSession::new(input).unwrap();
         app.set_session(session);
 
         assert!(app.session().is_some());
