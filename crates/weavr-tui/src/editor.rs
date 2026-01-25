@@ -29,7 +29,9 @@ pub fn take_editor_pending(app: &mut App) -> Option<String> {
 /// Applies content returned from the external editor as a manual resolution.
 pub fn apply_editor_result(app: &mut App, content: &str) {
     let owned = content.to_string();
-    resolution::apply_resolution(app, "Manual edit", |_hunk| Resolution::manual(owned.clone()));
+    resolution::apply_resolution(app, "Manual edit", |_hunk| {
+        Resolution::manual(owned.clone())
+    });
 }
 
 /// Gets the content of the current hunk for editing.

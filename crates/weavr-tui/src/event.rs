@@ -50,7 +50,10 @@ fn handle_key_event(app: &mut App, key: KeyEvent) {
 fn handle_normal_mode(app: &mut App, key: KeyEvent) {
     // Check for 'gg' sequence (go to first hunk)
     if key.code == KeyCode::Char('g') && !key.modifiers.contains(KeyModifiers::SHIFT) {
-        if app.key_sequence.check(KeyCode::Char('g'), KEY_SEQUENCE_TIMEOUT) {
+        if app
+            .key_sequence
+            .check(KeyCode::Char('g'), KEY_SEQUENCE_TIMEOUT)
+        {
             app.go_to_hunk(0);
             app.key_sequence.clear();
             return;
