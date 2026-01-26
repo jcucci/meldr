@@ -99,7 +99,7 @@ fn unquote_path(s: &str) -> String {
     while let Some(c) = chars.next() {
         if c == '\\' {
             match chars.next() {
-                Some('\\') => result.push('\\'),
+                Some('\\') | None => result.push('\\'),
                 Some('"') => result.push('"'),
                 Some('n') => result.push('\n'),
                 Some('t') => result.push('\t'),
@@ -127,7 +127,6 @@ fn unquote_path(s: &str) -> String {
                     result.push('\\');
                     result.push(other);
                 }
-                None => result.push('\\'),
             }
         } else {
             result.push(c);

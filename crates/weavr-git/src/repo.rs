@@ -19,7 +19,7 @@ pub struct GitRepo {
 impl GitRepo {
     /// Discovers the Git repository from the current directory.
     ///
-    /// Uses `git rev-parse --show-toplevel` (via [`discover_from`]) to find the repository root.
+    /// Uses `git rev-parse --show-toplevel` (via [`Self::discover_from`]) to find the repository root.
     ///
     /// # Errors
     ///
