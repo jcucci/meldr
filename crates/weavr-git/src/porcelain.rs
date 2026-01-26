@@ -34,6 +34,8 @@ pub struct ConflictEntry {
 /// - `DD` = both deleted
 /// - `AU`, `UD` = added by us, deleted by them
 /// - `UA`, `DU` = added by them, deleted by us
+///
+/// Handles quoted filenames with C-style escape sequences.
 #[must_use]
 pub fn parse_porcelain_v1(output: &str) -> Vec<ConflictEntry> {
     output
@@ -47,9 +49,13 @@ pub fn parse_porcelain_v1(output: &str) -> Vec<ConflictEntry> {
             let conflict_type = is_unmerged(xy)?;
 
             // Path starts at position 3 (after "XY ")
-            let path = PathBuf::from(line[3..].to_string());
+            let raw_path = &line[3..];
+            let path = PathBuf::from(unquote_path(raw_path));
 
-            Some(ConflictEntry { path, conflict_type })
+            Some(ConflictEntry {
+                path,
+                conflict_type,
+            })
         })
         .collect()
 }
@@ -64,6 +70,71 @@ fn is_unmerged(xy: &str) -> Option<ConflictType> {
         "UA" | "DU" => Some(ConflictType::AddedByThemDeletedByUs),
         _ => None,
     }
+}
+
+/// Unquotes a Git-quoted path string.
+///
+/// Git quotes filenames containing special characters (spaces, quotes, newlines,
+/// non-ASCII) using C-style escaping. This function handles:
+/// - `\\` -> `\`
+/// - `\"` -> `"`
+/// - `\n` -> newline
+/// - `\t` -> tab
+/// - `\xxx` -> octal escape sequences
+fn unquote_path(s: &str) -> String {
+    // If not quoted, return as-is
+    if !s.starts_with('"') {
+        return s.to_string();
+    }
+
+    // Remove surrounding quotes
+    let inner = s
+        .strip_prefix('"')
+        .and_then(|s| s.strip_suffix('"'))
+        .unwrap_or(s);
+
+    let mut result = String::with_capacity(inner.len());
+    let mut chars = inner.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            match chars.next() {
+                Some('\\') => result.push('\\'),
+                Some('"') => result.push('"'),
+                Some('n') => result.push('\n'),
+                Some('t') => result.push('\t'),
+                Some('r') => result.push('\r'),
+                // Octal escape sequence (e.g., \302\240 for non-breaking space)
+                Some(d1) if d1.is_ascii_digit() => {
+                    let mut octal = String::new();
+                    octal.push(d1);
+                    // Collect up to 2 more octal digits
+                    for _ in 0..2 {
+                        if let Some(&d) = chars.peek() {
+                            if d.is_ascii_digit() && d < '8' {
+                                octal.push(chars.next().unwrap());
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if let Ok(byte) = u8::from_str_radix(&octal, 8) {
+                        result.push(byte as char);
+                    }
+                }
+                Some(other) => {
+                    // Unknown escape, preserve literally
+                    result.push('\\');
+                    result.push(other);
+                }
+                None => result.push('\\'),
+            }
+        } else {
+            result.push(c);
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -113,7 +184,10 @@ mod tests {
         let output = "AU added_by_us.rs\n";
         let entries = parse_porcelain_v1(output);
         assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].conflict_type, ConflictType::AddedByUsDeletedByThem);
+        assert_eq!(
+            entries[0].conflict_type,
+            ConflictType::AddedByUsDeletedByThem
+        );
     }
 
     #[test]
@@ -121,7 +195,10 @@ mod tests {
         let output = "UA added_by_them.rs\n";
         let entries = parse_porcelain_v1(output);
         assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].conflict_type, ConflictType::AddedByThemDeletedByUs);
+        assert_eq!(
+            entries[0].conflict_type,
+            ConflictType::AddedByThemDeletedByUs
+        );
     }
 
     #[test]
@@ -161,5 +238,52 @@ mod tests {
         let output = "UU src/deep/nested/file.rs\n";
         let entries = parse_porcelain_v1(output);
         assert_eq!(entries[0].path, PathBuf::from("src/deep/nested/file.rs"));
+    }
+
+    #[test]
+    fn unquote_simple_path() {
+        assert_eq!(unquote_path("simple.rs"), "simple.rs");
+    }
+
+    #[test]
+    fn unquote_quoted_path_with_spaces() {
+        assert_eq!(
+            unquote_path("\"path with spaces.rs\""),
+            "path with spaces.rs"
+        );
+    }
+
+    #[test]
+    fn unquote_escaped_quotes() {
+        assert_eq!(unquote_path("\"file\\\"name\\\".rs\""), "file\"name\".rs");
+    }
+
+    #[test]
+    fn unquote_escaped_backslash() {
+        assert_eq!(unquote_path("\"path\\\\file.rs\""), "path\\file.rs");
+    }
+
+    #[test]
+    fn unquote_escaped_newline() {
+        assert_eq!(unquote_path("\"file\\nname.rs\""), "file\nname.rs");
+    }
+
+    #[test]
+    fn unquote_escaped_tab() {
+        assert_eq!(unquote_path("\"file\\tname.rs\""), "file\tname.rs");
+    }
+
+    #[test]
+    fn unquote_octal_escape() {
+        // \101 is octal for 'A' (65 decimal)
+        assert_eq!(unquote_path("\"\\101.rs\""), "A.rs");
+    }
+
+    #[test]
+    fn parse_quoted_conflict() {
+        let output = "UU \"file with \\\"quotes\\\".rs\"\n";
+        let entries = parse_porcelain_v1(output);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].path, PathBuf::from("file with \"quotes\".rs"));
     }
 }
