@@ -153,6 +153,14 @@ impl App {
         self.session.as_ref()
     }
 
+    /// Takes ownership of the session, leaving `None` in its place.
+    ///
+    /// Use this after the TUI exits to access the session for the
+    /// apply/validate/complete lifecycle.
+    pub fn take_session(&mut self) -> Option<MergeSession> {
+        self.session.take()
+    }
+
     /// Returns whether the application should quit.
     #[must_use]
     pub fn should_quit(&self) -> bool {
@@ -464,6 +472,96 @@ impl FocusedPane {
             Self::Right => "Right (Theirs)",
             Self::Result => "Result",
         }
+    }
+}
+
+/// Runs the TUI event loop with the given App.
+///
+/// This initializes the terminal, runs until `app.should_quit()` is true,
+/// then restores the terminal.
+///
+/// # Errors
+///
+/// Returns an error if terminal initialization or event handling fails.
+pub fn run(app: &mut App) -> std::io::Result<()> {
+    let mut terminal = ratatui::init();
+    let result = run_event_loop(&mut terminal, app);
+    ratatui::restore();
+    result
+}
+
+/// Main event loop implementation.
+fn run_event_loop(
+    terminal: &mut ratatui::DefaultTerminal,
+    app: &mut App,
+) -> std::io::Result<()> {
+    while !app.should_quit() {
+        // Check for pending editor (external editor integration)
+        if let Some(content) = app.take_editor_pending() {
+            // Suspend TUI
+            ratatui::restore();
+
+            // Run external editor
+            let result = run_editor(&content)?;
+
+            // Resume TUI
+            *terminal = ratatui::init();
+
+            // Apply result if editor succeeded
+            if let Some(new_content) = result {
+                app.apply_editor_result(&new_content);
+            } else {
+                app.set_status_message("Editor cancelled");
+            }
+            continue;
+        }
+
+        terminal.draw(|frame| ui::draw(frame, app))?;
+
+        if let Some(evt) = event::poll_event(Duration::from_millis(100))? {
+            event::handle_event(app, &evt);
+        }
+    }
+
+    Ok(())
+}
+
+/// Runs the external editor with the given content.
+///
+/// Returns `Some(content)` if the editor exited successfully, `None` otherwise.
+fn run_editor(content: &str) -> std::io::Result<Option<String>> {
+    use std::io::Write;
+
+    // Prefer VISUAL, then EDITOR, then fall back to vi
+    let editor_cmd = std::env::var("VISUAL")
+        .or_else(|_| std::env::var("EDITOR"))
+        .unwrap_or_else(|_| "vi".into());
+
+    // Parse the editor command into program + args using shell-style splitting
+    let mut parts = shell_words::split(&editor_cmd)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))?;
+
+    if parts.is_empty() {
+        parts.push("vi".into());
+    }
+
+    let program = parts.remove(0);
+
+    // Create temp file with content
+    let mut tmp = tempfile::NamedTempFile::new()?;
+    tmp.write_all(content.as_bytes())?;
+    tmp.flush()?;
+
+    // Run editor with any additional arguments
+    let status = std::process::Command::new(&program)
+        .args(&parts)
+        .arg(tmp.path())
+        .status()?;
+
+    if status.success() {
+        Ok(Some(std::fs::read_to_string(tmp.path())?))
+    } else {
+        Ok(None) // Editor exited with error, cancel
     }
 }
 
