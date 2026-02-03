@@ -43,7 +43,9 @@ pub fn process_file(path: &Path) -> Result<TuiResult, CliError> {
     weavr_tui::run(&mut app)?;
 
     // Extract session and check resolution state
-    let session = app.take_session().expect("session should exist after TUI");
+    let session = app
+        .take_session()
+        .ok_or_else(|| std::io::Error::other("merge session unexpectedly missing after TUI run"))?;
     let resolved_count = session
         .hunks()
         .iter()

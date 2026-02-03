@@ -491,10 +491,7 @@ pub fn run(app: &mut App) -> std::io::Result<()> {
 }
 
 /// Main event loop implementation.
-fn run_event_loop(
-    terminal: &mut ratatui::DefaultTerminal,
-    app: &mut App,
-) -> std::io::Result<()> {
+fn run_event_loop(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> std::io::Result<()> {
     while !app.should_quit() {
         // Check for pending editor (external editor integration)
         if let Some(content) = app.take_editor_pending() {

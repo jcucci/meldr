@@ -41,6 +41,8 @@ fn run(cli: &Cli) -> Result<i32, CliError> {
     }
 
     // Mode: Interactive (TUI)
+    let mut any_unresolved = false;
+
     for path in &files {
         let result = tui::process_file(path)?;
 
@@ -52,6 +54,7 @@ fn run(cli: &Cli) -> Result<i32, CliError> {
                 result.hunks_resolved
             );
         } else {
+            any_unresolved = true;
             eprintln!(
                 "{}: exited with {}/{} hunks unresolved",
                 path.display(),
@@ -61,7 +64,11 @@ fn run(cli: &Cli) -> Result<i32, CliError> {
         }
     }
 
-    Ok(exit_codes::SUCCESS)
+    if any_unresolved {
+        Ok(exit_codes::UNRESOLVED)
+    } else {
+        Ok(exit_codes::SUCCESS)
+    }
 }
 
 fn main() {

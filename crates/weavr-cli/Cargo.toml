@@ -22,7 +22,4 @@ weavr-core.workspace = true
 weavr-git.workspace = true
 weavr-tui.workspace = true
 clap.workspace = true
-ratatui.workspace = true
 thiserror.workspace = true
-tempfile = "3"
-shell-words = "1"
