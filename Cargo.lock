@@ -784,6 +784,7 @@ dependencies = [
  "thiserror",
  "weavr-core",
  "weavr-git",
+ "weavr-tui",
 ]
 
 [[package]]

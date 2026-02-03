@@ -11,6 +11,7 @@ mod cli;
 mod discovery;
 mod error;
 mod headless;
+mod tui;
 
 use clap::Parser;
 
@@ -40,14 +41,34 @@ fn run(cli: &Cli) -> Result<i32, CliError> {
     }
 
     // Mode: Interactive (TUI)
-    println!("weavr: interactive mode");
-    println!("Files to resolve:");
-    for file in &files {
-        println!("  {}", file.display());
-    }
-    println!("\nTUI integration pending (see weavr-tui crate)");
+    let mut any_unresolved = false;
 
-    Ok(exit_codes::SUCCESS)
+    for path in &files {
+        let result = tui::process_file(path)?;
+
+        if let Some(ref content) = result.content {
+            std::fs::write(path, content)?;
+            println!(
+                "{}: {} hunks resolved",
+                path.display(),
+                result.hunks_resolved
+            );
+        } else {
+            any_unresolved = true;
+            eprintln!(
+                "{}: exited with {}/{} hunks unresolved",
+                path.display(),
+                result.total_hunks - result.hunks_resolved,
+                result.total_hunks
+            );
+        }
+    }
+
+    if any_unresolved {
+        Ok(exit_codes::UNRESOLVED)
+    } else {
+        Ok(exit_codes::SUCCESS)
+    }
 }
 
 fn main() {

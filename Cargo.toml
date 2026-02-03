@@ -29,6 +29,7 @@ pedantic = "warn"
 # Internal crates
 weavr-core = { path = "crates/weavr-core" }
 weavr-git = { path = "crates/weavr-git" }
+weavr-tui = { path = "crates/weavr-tui" }
 
 # CLI dependencies
 clap = { version = "4.4", features = ["derive"] }
